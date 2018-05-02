@@ -1,6 +1,6 @@
-# T∅nes
+# MindSet
 
-T∅nes (pronounced "Nullset Tones") is a language based on set theory. It has only one data type, the set, one atomic datum, the empty set `{}`, and one persistent variable, `U`, which at the start of the program is equal to the input.
+MindSet is a language based on set theory. It has only one data type, the set, one atomic datum, the empty set `{}`, and one persistent variable, `U`, which at the start of the program is equal to the input.
 
 ## Overview
 
@@ -8,8 +8,8 @@ T∅nes (pronounced "Nullset Tones") is a language based on set theory. It has o
 - Most lines are simply evaluated, and `U` is set to the result. A line is considered not to end until all `{}` and `()` have been closed.
 - Operators are all either binary infix, or unary postfix.
 - For convenience, the (nonnegative) integers can be written in their ordinary base 10 form instead of their set theoretic form; they will be translated for program execution.\*
-- Labels are used in flow control and as temporary variables in certain operators. They can be any nonempty alphabetic string -- no numbers or underscores -- except for `U`, and are case sensitive.
-- If a line is preceded by `@` and a label, the result is not assigned to `U`. Instead, if the result is *not* `{}`, execution moves to the line after the first occurrence of the same `@` label. If it *is* `{}`, then execution moves to the line after the the *last* occurence of the same `@` label.
+- Labels are used in flow control and as temporary variables in certain operators. They can be any nonempty alphabetic string (no numbers or underscores) except for `U`, and are case sensitive.
+- If a line is preceded by `@` and a label, the result is not assigned to `U`. Instead, if the result is *not* `{}`, execution moves to the line after the *first* occurrence of the same `@` label. If it *is* `{}`, then execution moves to the line after the the *last* occurence of the same `@` label.
 - If an `@` label occurs exactly once (such that execution will simply continue on regardless of the result), then implementations are encouraged to print the result of the accompanying evaluation when it is encountered, as a debug functionality.
 
 \* For those not familiar, `0` is defined as `{}`, and the positive integers are represented by the set containing all previous integers. So, `1`=`{0}`, `2`=`{0,1}`, `3`=`{0,1,2}`.
