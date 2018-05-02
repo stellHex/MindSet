@@ -27,7 +27,7 @@ Precedence is parentheses, then unary operators, then binary operators from left
 | `A+B`       | Union               | The set of everything that's an element of `A` or `B`. |
 | `A*B`       | Intersection        | The set of everything that's an element of both `A` and `B`. |
 | `A-B`       | Difference          | The set of everything that's an element of `A`, but not `B`. |
-| `A<B`       | Subset              | `U` if every element of `A` is an elemenet of `B`, `{}` otherwise. |
+| `A<B`       | Subset              | `U` if every element of `A` is an element of `B`, `{}` otherwise. |
 | `A[B`       | Membership          | `U` if `A` is an element of `B`, `{}` otherwise. |
 | `A=B`       | Equality            | `U` if `A` and `B` are the same, `{}` otherwise. |
 
@@ -40,8 +40,6 @@ Using any Reduce operator on the empty set returns the empty set.
 | `A+`        | Union Reduce        | The union of all elements in `A`. |
 | `A*`        | Intersection Reduce | The intersection of all elements in `A`. |
 | `A-`        | Difference Reduce   | The set of all elements of elements of `A` which are elements of exactly one element of A. |
-| `A<`        | Subset Reduce       | The element of `A` of which all other elements of `A` are subsets, if it exists; `{}` otherwise. |
-| `A[`        | Membership Reduce   | The element of `A` of which all other elements of `A` are members, if it exists; `{}` otherwise. |
 | `A$`        | Ordinal             | The whole number set representing the number of elements in `A`. |
 | `A^`        | Power Set           | The set of all possible subsets of `A`. |
 
