@@ -12,7 +12,7 @@ MindSet is a language based on set theory. It has only one data type, the set, o
 - If a line is preceded by `@` and a label, the result is not assigned to `U`. Instead, if the result is *not* `{}`, execution moves to the line after the *first* occurrence of the same `@` label. If it *is* `{}`, then execution moves to the line after the the *last* occurence of the same `@` label.
 - If an `@` label occurs exactly once (such that execution will simply continue on regardless of the result), then implementations are encouraged to print the result of the accompanying evaluation when it is encountered, as a debug functionality.
 
-\* For those not familiar, in [the usual formulation](https://en.wikipedia.org/wiki/Set-theoretic_definition_of_natural_numbers) `0` is defined as `{}`, and the positive integers are represented by the set containing all previous integers. So, `1`=`{0}`, `2`=`{0,1}`, `3`=`{0,1,2}`.
+\* For those not familiar, in [the usual formulation](https://en.wikipedia.org/wiki/Set-theoretic_definition_of_natural_numbers#Definition_as_von_Neumann_ordinals) used here, `0` is `{}`, and the positive integers are represented by the set containing all previous natural numbers. So, `1`=`{0}`, `2`=`{0,1}`, `3`=`{0,1,2}`.
 
 ## Operators
 
