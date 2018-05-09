@@ -4,13 +4,11 @@ MindSet is a language based on set theory. It has only one data type, the set, o
 
 ## Overview
 
-- Sets are defined via curly braces and commas, as in Python. Extraneous commas are ignored.
+- Sets are defined via curly braces and commas, as in Python. Extraneous commas are ignored. me
 - Most lines are simply evaluated, and `U` is set to the result. A line is considered not to end until all `{}` and `()` have been closed.
 - Operators are all either binary infix, or unary postfix.
 - For convenience, the (nonnegative) integers can be written in their ordinary base 10 form instead of their set theoretic form; they will be translated for program execution.\*
-- Labels are used in flow control and as temporary variables in certain operators. They can be any nonempty alphabetic string (no numbers or underscores) except for `U`, and are case sensitive.
-- If a line is preceded by `@` and a label, the result is not assigned to `U`. Instead, if the result is *not* `{}`, execution moves to the line after the *first* occurrence of the same `@` label. If it *is* `{}`, then execution moves to the line after the the *last* occurence of the same `@` label.
-- If an `@` label occurs exactly once (such that execution will simply continue on regardless of the result), then implementations are encouraged to print the result of the accompanying evaluation when it is encountered, as a debug functionality.
+- Labels are as temporary variables in certain operators. They can be any nonempty alphabetic string (no numbers or underscores) except for `U`, and are case sensitive.
 
 \* For those not familiar, in [the usual formulation](https://en.wikipedia.org/wiki/Set-theoretic_definition_of_natural_numbers#Definition_as_von_Neumann_ordinals) used here, `0` is `{}`, and the positive integers are represented by the set containing all previous natural numbers. So, `1`=`{0}`, `2`=`{0,1}`, `3`=`{0,1,2}`.
 
@@ -52,10 +50,14 @@ Using any Reduce operator on the empty set returns the empty set.
 
 ## Useful Concepts
 
-- An ordered pair [`A`, `B`] can be defined with the form the Kuratowski formulation `{{A}, {A,B}}`. Then, `A` can be retrieved via unary `*`, and `B` can be retrieved via unary `-`. This works even if `A`=`B`.
+- An ordered pair [`A`, `B`] can be defined with the form the Kuratowski formulation `{{A}, {A,B}}`. Then, `A` can be retrieved via double application of unary `*`, and `B` can be retrieved via double application of unary `-`. This works even if `A`=`B`.
 - Ordered lists of larger size can be constructed in the form `{{0,{0,A}}, {1,{1,B}}, {2,{2,C}}...}`.
 - To retrieve element `n` of list `A`, you can use `A?a:({n}[a)+-`
 
+## Execution
+
+- A program must be a set of 0 or more ordered pairs `{{A}, {A, B}}`. A must be a c
+- Flow control is accomplished by means of setting `U` to the expression `<program>?line:((line**=u**)--)`}, unless it evaluates to `{}`. In that case, the program halts, and `U` is consideered the output.
 
 ## Example programs
 
