@@ -1,10 +1,10 @@
 # MindSet
 
-MindSet is a language based on set theory. It has only one data type, the set, one atomic datum, the empty set `{}`, and one persistent variable, `U`, which at the start of the program is equal to the input.
+MindSet is a language based on set theory. It has only one data type, the set, one atomic datum, the empty set `{}`, and one persistent variable, `U`, which at the start of the program is equal to the input (sort of, see execution).
 
 ## Overview
 
-- Sets are defined via curly braces and commas, as in Python. Extraneous commas are ignored. me
+- Sets are defined via curly braces and commas, as in Python.
 - Most lines are simply evaluated, and `U` is set to the result. A line is considered not to end until all `{}` and `()` have been closed.
 - Operators are all either binary infix, or unary postfix.
 - For convenience, the (nonnegative) integers can be written in their ordinary base 10 form instead of their set theoretic form; they will be translated for program execution.\*
@@ -25,9 +25,9 @@ Precedence is parentheses, then unary operators, then binary operators from left
 | `A+B`       | Union               | The set of everything that's an element of `A` or `B`. |
 | `A*B`       | Intersection        | The set of everything that's an element of both `A` and `B`. |
 | `A-B`       | Difference          | The set of everything that's an element of `A`, but not `B`. |
-| `A<B`       | Subset              | `U` if every element of `A` is an element of `B`, `{}` otherwise. |
-| `A[B`       | Membership          | `U` if `A` is an element of `B`, `{}` otherwise. |
-| `A=B`       | Equality            | `U` if `A` and `B` are the same, `{}` otherwise. |
+| `A<B`       | Subset              | `1` if every element of `A` is an element of `B`, `{}` otherwise. |
+| `A[B`       | Membership          | `1` if `A` is an element of `B`, `{}` otherwise. |
+| `A=B`       | Equality            | `1` if `A` and `B` are the same, `{}` otherwise. |
 
 ### Standard Unary Operators
 
@@ -48,16 +48,18 @@ Using any Reduce operator on the empty set returns the empty set.
 | `A#a:(...)` | Map                 | The set of all elements `a` of `A`, transformed by the expression in the parentheses. For example, `{0,1,2}#a:(a-{0})` returns `{0,{1}}`, since `0-0`=`1-0`=`0` and `2-0`=`{1}`. |
 | `A?a:(...)` | Filter              | The set of all elements `a` of `A` which don't return `{}` for the expression in the parentheses. For example, `{0,1,2}?a:(a-{0})` returns `{2}`. |
 
-## Useful Concepts
+## Important Concepts
 
-- An ordered pair [`A`, `B`] can be defined with the form the Kuratowski formulation `{{A}, {A,B}}`. Then, `A` can be retrieved via double application of unary `*`, and `B` can be retrieved via double application of unary `-`. This works even if `A`=`B`.
-- Ordered lists of larger size can be constructed in the form `{{0,{0,A}}, {1,{1,B}}, {2,{2,C}}...}`.
+- An ordered pair [`A`, `B`] can be defined via the Kuratowski formulation `{{A}, {A,B}}`. Then, `A` can be retrieved via double application of unary `*`, and `B` can be retrieved via double application of unary `-`. This works even if `A`=`B`.
+- Ordered lists of larger size can be constructed in the form `{{{0},{0,A}}, {{1},{1,B}}, {{2},{2,C}}...}`.
 - To retrieve element `n` of list `A`, you can use `A?a:({n}[a)+-`
 
 ## Execution
 
-- A program must be a set of 0 or more ordered pairs `{{A}, {A, B}}`. A must be a c
-- Flow control is accomplished by means of setting `U` to the expression `<program>?line:((line**=u**)--)`}, unless it evaluates to `{}`. In that case, the program halts, and `U` is consideered the output.
+- A program must be a set of 0 or more ordered pairs `{{A}, {A, B}}`, called "lines". `A`, the "index", must be a constant (not contain `U` or any operators), but `B`, the "expression" on the line, can be any, er, expression.
+- Flow control is accomplished by means of setting `U` to the expression `<program>?line:((line**=U**)--)`}, unless the evaluates to `{}`. In that case, the program halts, and `U--` is considered the output.
+- If `U` is an ordered pair, and the first `U**` is the index of exactly one line, then this is equivalent to setting `U` to the value of the expression of that line. It's possible to make other situations useful, but be sure you know what you're doing.
+- At execution start, `U` is set to `{{}, {{},input}}`, so that the first line to be executed is the line with index `{}`. 
 
 ## Example programs
 
@@ -66,14 +68,22 @@ Using any Reduce operator on the empty set returns the empty set.
 The program assumes that the input is a set of 2 integral elements.
 
 ```
-@Add {0}-U
-  {U+ + {U+}, U*+ }
-@Add {0}-U
-(U-{0})+
+{
+  {{0}, {0,
+    {{1-(1-U--)}, {1-(1-U--),
+      {U--+ + {U--+}, U--*+}
+    }}
+  }}
+  {{1}, {1,
+    {{2}, {2, 
+      (U-- - {0})+
+    }}
+  }}
+}
 ```
 
-- `@Add {0}-U` is simply a loop which ends when `U` contains `0`
-- Since `U` is a set of numbers, `U+` is the maximum and `U*` is the minimum
+- `1-(1-U--)` is `0` when `U--` contains `0`, `1` otherwise
+- Since `U--` is a set of numbers, `U--+` is the maximum and `U--*` is the minimum
 - `A + {A}` is simply the successor function -- AKA, increment.
 - Because of how numbers work, `A+` functions as a decrement.
 - `(U-{0})+` gets rid of the `0`, and then "unpacks" the remaining member of `U` (`{A}+` always equals `A`)
