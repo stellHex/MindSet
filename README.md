@@ -70,20 +70,19 @@ The program assumes that the input is a set of 2 integral elements.
 ```
 {
   {{0}, {0,
-    {{1-(1-U--)}, {1-(1-U--),
+    {{1-{1[U--}}, {1-{1[U--},
       {U--+ + {U--+}, U--*+}
     }}
-  }}
+  }},
   {{1}, {1,
     {{2}, {2, 
-      (U-- - {0})+
+      U--+
     }}
   }}
 }
 ```
 
-- `1-(1-U--)` is `0` when `U--` contains `0`, `1` otherwise
+- `1-{1[U--}` is `0` when `U--` contains `1`, `1` otherwise
 - Since `U--` is a set of numbers, `U--+` is the maximum and `U--*` is the minimum
 - `A + {A}` is simply the successor function -- AKA, increment.
 - Because of how numbers work, `A+` functions as a decrement.
-- `(U-{0})+` gets rid of the `0`, and then "unpacks" the remaining member of `U` (`{A}+` always equals `A`)
