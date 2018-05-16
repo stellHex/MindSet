@@ -5,7 +5,7 @@ MindSet is a language based on set theory. It has only one data type, the set, o
 ## Overview
 
 - Sets are defined via curly braces and commas, as in Python.
-- Most lines are simply evaluated, and `U` is set to the result. A line is considered not to end until all `{}` and `()` have been closed.
+- Programs are also sets, of a fashion, but they are allowed to include unevaluated expressions, which are not first class data types.
 - Operators are all either binary infix, or unary postfix.
 - For convenience, the (nonnegative) integers can be written in their ordinary base 10 form instead of their set theoretic form; they will be translated for program execution.\*
 - Labels are as temporary variables in certain operators. They can be any nonempty alphabetic string (no numbers or underscores) except for `U`, and are case sensitive.
