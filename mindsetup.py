@@ -3,6 +3,7 @@ import parsimonious
 grammar = parsimonious.grammar.Grammar('''
     expression = binary / unary / parens / setx / set / label
     
+    program = expression _
     input = set _
     
     intermediate = unary / parens / setx / set / label
@@ -67,20 +68,196 @@ class coolset(frozenset):
   __hash__ = frozenset.__hash__
 
   def difference(self, iterable):
+    if type(self) is tuple or type(iterable) is tuple:
+      return coolset()
     return coolset(super().difference(iterable))
 
   def intersection(self, iterable):
+    if type(self) is tuple or type(iterable) is tuple:
+      return coolset()
     return coolset(super().intersection(iterable))
 
   def symmetric_difference(self, iterable):
+    if type(self) is tuple or type(iterable) is tuple:
+      return coolset()
     return coolset(super().symmetric_difference(iterable))
 
   def union(self, iterable):
+    if type(self) is tuple or type(iterable) is tuple:
+      return coolset()
     return coolset(super().union(iterable))
   
 for n in range(256):
   coolset.nums.append(coolset(coolset.nums))
   coolset.nums[-1].numeral = n
+
+class MindSet:
+  program = None
+  universe = None
+  result = None
+  unary = {}
+  binary = {}
+
+  def __init__(self, program, universe=None):
+    
+    if type(program) is str:
+      program = parser.visit(grammar['program'].parse(program))
+    self.program = program
+    
+    if universe is None:
+      self.universe = coolset({coolset({coolset()})})
+    else:
+      if type(universe) is str:
+        universe = parser.visit(grammar['input'].parse(universe))
+      self.universe = coolset({coolset({coolset()}), coolset({coolset(), self.value(universe)})})
+    
+    self.binary = {
+      "+": lambda a, b: a.union(b),
+      "*": lambda a, b: a.intersection(b),
+      "-": lambda a, b: a.difference(b),
+      "<": lambda a, b: self.universe if a.issubset(b) else coolset(),
+      "[": lambda a, b: self.universe if a in b else coolset(),
+      "=": lambda a, b: self.universe if a == b else coolset(),
+    }
+    
+    self.unary = {
+      "+": lambda a: MindSet.reduce(coolset.union, a),
+      "*": lambda a: MindSet.reduce(coolset.intersection, a),
+      "-": self.symmetricmultidifference,
+      "$": lambda a: self.value(len(a)),
+      "^": self.powerset,
+      "#": self.mapset,
+      "?": self.filterset
+    }
+
+  def value(self, val, labels=None, expressive=True):
+    if labels is None: labels = {"U": self.universe}
+    value = lambda v: self.value(v, labels, expressive)
+    t = type(val)
+    if t is coolset and not val.expressive:
+      return val
+    elif t is coolset or t is frozenset or t is set:
+      return coolset(map(value, val))
+    elif t is tuple:
+
+      op = val[0]
+      args = val[1:]
+
+      if not expressive and op[0] != '!':
+        return tuple(map(value, val))
+
+      if op[0] == '!': op = op[1]
+
+      if len(args) == 1:
+        return self.unary[op](value(*args))
+      elif len(args) == 2:
+        return self.binary[op](*map(value, args))
+      elif len(args) == 3:
+        return self.unary[op](*args, labels, expressive)
+      else:
+        raise Exception("ERROR: Malformed operator: {}; expected tuple of length 2, 3, or 4".format(val))
+    elif t is str:
+      if not expressive and val not in labels:
+        return val
+      else: return labels[val]
+    else:
+      raise Exception("ERROR: Unknown construct: {} of type {}; expected set, int, tuple (operator expression) or string (label)".format(val, t))
+
+  @classmethod
+  def reduce(cls, f, aset):
+    if aset == coolset():
+      return aset
+    aset = set(aset)
+    val = aset.pop()
+    while aset:
+      val = f(val, aset.pop())
+    return coolset(val)
+
+  def symmetricmultidifference(self, aset):
+    inset  = set()
+    outset = set()
+    for anelem in aset:
+      outset.update(inset.intersection(anelem))
+      inset.update(anelem)
+      inset.difference_update(outset)
+    return coolset(inset)
+      
+  def powerset(self, aset):
+    if len(aset) > 32:
+      print("You played yourself")
+    workset = set(frozenset())
+    for anelem in aset:
+      newset = set()
+      for workelem in workset:
+        newset.add(workelem.union({anelem}))
+      workset.update(newset)
+    return coolset(workset)
+  
+  def mapset(self, aset, label, expr, labels, expressive):
+    return coolset(map(lambda val: self.value(expr, {**labels, label:val}, expressive), aset))
+  
+  def filterset(self, aset, label, expr, labels, expressive):
+    return coolset(filter(lambda val: self.value(expr, dict(labels, **{label:val}), expressive), aset))
+  
+  def step(self, log = False):
+    # What we're supposed to do is set the univese to `<program>?line:(line**=U**)--`
+    # in other words,
+    # self.universe = self.value(('-', ('-', ('?', self.program, 'line', ('=', ('*', ('*', 'line')), ('*', ('*', 'U')))))))
+    # but that would take FOREVER since we'd have to evaluate every line every time
+    # so we cheat
+
+    # unless...WE DON'T
+
+    # lookingindex = None
+    # lookingline = None
+    # doingindex = self.value(('*', 'U'))
+    # if log:
+    #   print('Running line {}'.format(*doingindex))
+    # doingline = None
+    # for line in self.program:
+    #   if len(line) == 2:
+    #     for anelem in line:
+    #       if len(anelem) == 2:
+    #         wrappedlookingline = anelem
+    #       if len(anelem) == 1:
+    #         lookingindex = anelem
+    #     for maybeline in wrappedlookingline:
+    #       if maybeline not in lookingindex:
+    #         lookingline = maybeline
+    #   else:
+    #     for doubleduty in line:
+    #       lookingindex = doubleduty
+    #       for anelem in doubleduty:
+    #         lookingline = anelem
+    #   if self.value(lookingindex) == doingindex:
+    #     doingline = lookingline
+    #     self.universe = self.value(doingline)
+    #     if log:
+    #       print('Result: {}'.format(self.universe))
+    #     break
+    # if doingline is None:
+    #   print("No such line found.")
+    # return doingline
+
+    lineindex = self.value(('*', ('*', 'U')))
+    if log: 
+      print('\nRunning line {}'.format(lineindex))
+    newniverse = self.value(('!-',('!-',('!-',('!?',self.program,'line',('!=',('!*',('!*','line')), lineindex))))), expressive=False) 
+    if newniverse != coolset():
+      self.universe = self.value(newniverse)
+      if log:
+        print('EXPR: {}'.format(newniverse))
+        print('RSLT: {}'.format(self.universe))
+    elif log:
+      print("No such line found.\n\nFINAL RESULT:")
+    return newniverse
+    
+  def run(self, log=False, step=False):
+    haltwhennone = True
+    while haltwhennone != coolset():
+      haltwhennone = self.step(log)
+      if step: input()
+    self.result = self.value(("-", ("-", self.universe)))
 
 class MindParser(parsimonious.nodes.NodeVisitor):
 
@@ -111,7 +288,13 @@ class MindParser(parsimonious.nodes.NodeVisitor):
       return coolset(children[:1] + children[1])
 
   def visit_number(self, node, children):
-    return int(node.text)
+    val = int(node.text)
+    if val < len(coolset.nums):
+      return coolset.nums[val]
+    result = coolset(coolset.nums)
+    for i in range(val - len(coolset.nums)):
+      result = result.union({result})
+    return result
 
   def visit_unary(self, node, children):
     arg = children[0]
@@ -151,149 +334,4 @@ class MindParser(parsimonious.nodes.NodeVisitor):
   def visit_parens(self, node, children):
     return children[2]
 
-class MindSet:
-  program = None
-  universe = None
-  result = None
-  unary = {}
-  binary = {}
-
-  def __init__(self, program, universe):
-    
-    if type(program) is str:
-      program = parser.parse(program)
-    self.program = program
-    
-    if type(universe) is str:
-      universe = parser.visit(grammar['input'].parse(universe))
-    self.universe = coolset({coolset({coolset()}), coolset({coolset(), self.value(universe)})})
-    
-    self.binary = {
-      "+": lambda a, b: a.union(b),
-      "*": lambda a, b: a.intersection(b),
-      "-": lambda a, b: a.difference(b),
-      "<": lambda a, b: self.universe if a.issubset(b) else coolset(),
-      "[": lambda a, b: self.universe if a in b else coolset(),
-      "=": lambda a, b: self.universe if a == b else coolset(),
-    }
-    
-    self.unary = {
-      "+": lambda a: MindSet.reduce(coolset.union, a),
-      "*": lambda a: MindSet.reduce(coolset.intersection, a),
-      "-": self.symmetricmultidifference,
-      "$": lambda a: self.value(len(a)),
-      "^": self.powerset,
-      "#": self.mapset,
-      "?": self.filterset
-    }
-
-  def value(self, val, labels = None):
-    if labels is None: labels = {"U": self.universe}
-    value = lambda v: self.value(v, labels)
-    t = type(val)
-    if t is coolset and not val.expressive:
-      return val
-    elif t is coolset or t is frozenset or t is set:
-      return coolset(map(value, val))
-    elif t is int:
-      if val < len(coolset.nums):
-        return coolset.nums[val]
-      result = coolset(coolset.nums)
-      for i in range(val - len(coolset.nums)):
-        result = result.union({result})
-      return result
-    elif t is tuple:
-      op = val[0]
-      args = val[1:]
-      
-      if len(args) == 1:
-        return self.unary[op](value(*args))
-      elif len(args) == 2:
-        return self.binary[op](*map(value, args))
-      elif len(args) == 3:
-        return self.unary[op](*args, labels)
-      else:
-        raise Exception("ERROR: Malformed operator: {}; expected tuple of length 2, 3, or 4".format(val))
-    elif t is str:
-      return labels[val]
-    else:
-      raise Exception("ERROR: Unknown construct: {} of type {}; expected set, int, tuple (operator expression) or string (label)".format(val, t))
-
-  @classmethod
-  def reduce(cls, f, aset):
-    if aset == coolset():
-      return aset
-    aset = set(aset)
-    val = aset.pop()
-    while aset:
-      val = f(val, aset.pop())
-    return coolset(val)
-
-  def symmetricmultidifference(self, aset):
-    inset  = set()
-    outset = set()
-    for anelem in aset:
-      outset.update(inset.intersection(anelem))
-      inset.update(anelem)
-      inset.difference_update(outset)
-    return coolset(inset)
-      
-  def powerset(self, aset):
-    if len(aset) > 32:
-      print("You played yourself")
-    workset = set(frozenset())
-    for anelem in aset:
-      newset = set()
-      for workelem in workset:
-        newset.add(workelem.union({anelem}))
-      workset.update(newset)
-    return coolset(workset)
-  
-  def mapset(self, aset, label, expr, labels):
-    return coolset(map(lambda val: self.value(expr, {**labels, label:val}), aset))
-  
-  def filterset(self, aset, label, expr, labels):
-    return coolset(filter(lambda val: self.value(expr, dict(labels, **{label:val})), aset))
-  
-  def step(self, log = False):
-    # What we're supposed to do is set the univese to `<program>?line:(line**=U**)--`
-    # in other words,
-    # self.universe = self.value(('-', ('-', ('?', self.program, 'line', ('=', ('*', ('*', 'line')), ('*', ('*', 'U')))))))
-    # but that would take FOREVER since we'd have to evaluate every line every time
-    # so we cheat
-    lookingindex = None
-    lookingline = None
-    doingindex = self.value(('*', 'U'))
-    if log:
-      print('Running line {}'.format(*doingindex))
-    doingline = None
-    for line in self.program:
-      if len(line) == 2:
-        for anelem in line:
-          if len(anelem) == 2:
-            wrappedlookingline = anelem
-          if len(anelem) == 1:
-            lookingindex = anelem
-        for maybeline in wrappedlookingline:
-          if maybeline not in lookingindex:
-            lookingline = maybeline
-      else:
-        for doubleduty in line:
-          lookingindex = doubleduty
-          for anelem in doubleduty:
-            lookingline = anelem
-      if self.value(lookingindex) == doingindex:
-        doingline = lookingline
-        self.universe = self.value(doingline)
-        if log:
-          print('Result: {}'.format(self.universe))
-        break
-    if log and doingline is None:
-      print("No such line found.")
-    return doingline
-    
-  def run(self, log=False):
-    haltwhennone = True
-    while(haltwhennone is not None):
-      haltwhennone = self.step(log)
-    self.result = self.value(("-",("-",self.universe)))
+parser = MindParser()
