@@ -57,7 +57,7 @@ Using any Reduce operator on the empty set returns the empty set.
 ## Execution
 
 - A program must be a set of 0 or more ordered pairs `{{A}, {A, B}}`, called "lines". `A`, the "index", must be a constant (not contain `U` or any operators), but `B`, the "expression" on the line, can be any, er, expression.
-- Flow control is accomplished by means of setting `U` to the expression `<program>?line:((line**=U**)--)`}, unless the evaluates to `{}`. In that case, the program halts, and `U--` is considered the output.
+- Flow control is accomplished by means of setting `U` to the expression `<program>?line:(line**=U**)---`}, unless the evaluates to `{}`. In that case, the program halts, and `U--` is considered the output.
 - If `U` is an ordered pair, and the first `U**` is the index of exactly one line, then this is equivalent to setting `U` to the value of the expression of that line. It's possible to make other situations useful, but be sure you know what you're doing.
 - At execution start, `U` is set to `{{}, {{},input}}`, so that the first line to be executed is the line with index `{}`. 
 
